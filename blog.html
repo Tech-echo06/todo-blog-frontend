@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Community Blog</title>
+  <link rel="stylesheet" href="css/blog.css" />
+  <style>
+    body {
+      margin: 0;
+      padding: 20px;
+      background-color: #121212;
+      color: #e0e0e0;
+      font-family: 'Poppins', sans-serif;
+    }
+    .container {
+      max-width: 800px;
+      margin: auto;
+    }
+    header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    header h1 {
+      color: #bb86fc;
+    }
+    .profile {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .profile input {
+      background: #1e1e1e;
+      color: white;
+      padding: 10px;
+      border: 1px solid #333;
+      border-radius: 6px;
+    }
+    .form {
+      background: #1e1e1e;
+      padding: 20px;
+      border-radius: 12px;
+      margin-bottom: 30px;
+    }
+    .form input,
+    .form textarea {
+      width: 100%;
+      margin-bottom: 10px;
+      padding: 10px;
+      background: #2a2a2a;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+    }
+    .form button {
+      padding: 10px 20px;
+      background-color: #03dac6;
+      border: none;
+      border-radius: 6px;
+      color: #000;
+      cursor: pointer;
+    }
+    .post {
+      background: #1e1e1e;
+      padding: 15px;
+      margin-bottom: 20px;
+      border-left: 4px solid #bb86fc;
+      border-radius: 8px;
+    }
+    .post h2 {
+      color: #ffd700;
+    }
+    .meta {
+      font-size: 0.8rem;
+      color: #999;
+      margin-bottom: 10px;
+    }
+    .actions span {
+      cursor: pointer;
+      margin-right: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>🌍 Community Blog</h1>
+    </header>
+
+    <div class="profile">
+      <input type="text" id="userName" placeholder="Enter your name to post" onblur="saveUser()" />
+    </div>
+
+    <div class="form">
+      <input type="text" id="blogTitle" placeholder="Blog Title" />
+      <textarea id="blogContent" placeholder="Write your blog here..." rows="5"></textarea>
+      <button onclick="postBlog()">Publish</button>
+    </div>
+
+    <div id="blogContainer"></div>
+  </div>
+
+  <script>
+    const blogContainer = document.getElementById('blogContainer');
+    let blogs = JSON.parse(localStorage.getItem('blogs')) || [];
+    let currentUser = localStorage.getItem('userName') || '';
+
+    document.getElementById('userName').value = currentUser;
+
+    function saveUser() {
+      const name = document.getElementById('userName').value.trim();
+      localStorage.setItem('userName', name);
+      currentUser = name;
+    }
+
+    function postBlog() {
+      const title = document.getElementById('blogTitle').value.trim();
+      const content = document.getElementById('blogContent').value.trim();
+      if (!title || !content || !currentUser) return alert("Please fill out all fields and your name.");
+      const newPost = {
+        title,
+        content,
+        author: currentUser,
+        likes: [],
+        comments: [],
+        date: new Date().toLocaleString()
+      };
+      blogs.unshift(newPost);
+      localStorage.setItem('blogs', JSON.stringify(blogs));
+      renderBlogs();
+      document.getElementById('blogTitle').value = '';
+      document.getElementById('blogContent').value = '';
+    }
+
+    function toggleLike(index) {
+      const name = currentUser;
+      const post = blogs[index];
+      const likeIndex = post.likes.indexOf(name);
+      if (likeIndex === -1) {
+        post.likes.push(name);
+      } else {
+        post.likes.splice(likeIndex, 1);
+      }
+      localStorage.setItem('blogs', JSON.stringify(blogs));
+      renderBlogs();
+    }
+
+    function renderBlogs() {
+      blogContainer.innerHTML = '';
+      blogs.forEach((post, index) => {
+        const div = document.createElement('div');
+        div.className = 'post';
+        div.innerHTML = `
+          <h2>${post.title}</h2>
+          <div class="meta">Posted by <strong>${post.author}</strong> on ${post.date}</div>
+          <p>${post.content}</p>
+          <div class="actions">
+            <span onclick="toggleLike(${index})">❤️ ${post.likes.length} Likes</span>
+            <span>💬 ${post.comments.length} Comments</span>
+          </div>
+        `;
+        blogContainer.appendChild(div);
+      });
+    }
+
+    renderBlogs();
+  </script>
+</body>
+</html>
